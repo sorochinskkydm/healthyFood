@@ -172,36 +172,40 @@ document.addEventListener("DOMContentLoaded", () => {
                 event.preventDefault();
 
                 const statusMessage = document.createElement("div");
+                // statusMessage.style.cssText = `
+                //     display: block;
+                //     margin: 0 auto;
+                //     font-size: 14px;
+                // `
                 statusMessage.classList.add("status");
                 statusMessage.textContent = message.loading;
                 form.append(statusMessage);
 
-                const request = new XMLHttpRequest();
-                request.open("POST", "server.php");
-                request.setRequestHeader("Content-type", "application/json");
-
                 const formData = new FormData(form);
+
                 const jsonObject = {};
-                formData.forEach((value,key) => {
+                formData.forEach(function(value, key) {
                     jsonObject[key] = value;
                 });
 
-                const json = JSON.stringify(jsonObject);
 
-                request.send(json);
-
-                request.addEventListener("load", () => {
-                    if(request.status === 200) {
-                        console.log(request.response);
+                fetch("server.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-type": "application/json"
+                    },
+                    body: JSON.stringify(jsonObject)
+                   })
+                   .then(data => data.text())
+                   .then(data => {
+                        console.log(data);
                         statusMessage.textContent = message.success;
-                        form.reset();
-                        setTimeout(function() {
-                            statusMessage.remove();
-                        }, 3000);
-                    } else {
-                        statusMessage.textContent = message.failure;
-                    }
-                });
+                        // setTimeout(function() {
+                        //     statusMessage.remove();
+                        // }, 3000);
+                    })
+                   .catch(() => statusMessage.textContent = message.failure)
+                   .finally(() => form.reset());
             });
         }
 
@@ -209,6 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
             postData(item); 
         });
         
+
 
 
 
